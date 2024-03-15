@@ -1,0 +1,3 @@
+[submodule "ApollonStreamAPI"]
+	path = ApollonStreamAPI
+	url = https://github.com/Sunwood-ai-labs/ApollonStreamAPI.git
