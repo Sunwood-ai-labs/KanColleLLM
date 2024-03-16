@@ -16,3 +16,5 @@ uvicorn ApollonStreamAPI.api.screencap_server:app --host 0.0.0.0 --port 8000
 
 (KanColleLLM) C:\Prj\KanColleLLM>python ApollonStreamAPI\demo\demo_screencap_client.py
 画像を受信し、保存しました。
+
+python ClassicalModel\demo_policy.py
