@@ -50,8 +50,8 @@ def tap_center(center):
     adb_command = f"adb shell input tap {center[0]} {center[1]}"
     subprocess.run(adb_command, shell=True)
 
-def tqdm_sleep(seconds):
-    for _ in tqdm(range(seconds)):
+def tqdm_sleep(seconds, text):
+    for _ in tqdm(range(seconds), desc="{:>15}".format(text)):
         time.sleep(1)
 
 async def main():
@@ -68,17 +68,22 @@ async def main():
         ("1-1-Kinkai", 5),
         ("battle-stage-ok", 5),
         ("battle-start", 20),
-        ("tanju", 5),
-        ("next", 5),
-        ("next", 5),
+        ("tanju", 30),
+        ("next", 3),
+        ("next", 3),
+        ("next", 3),
+        ("next", 3),
+        ("back", 10),
+        ("next", 10),
         ("withdrawal", 5)
     ]
 
-    for template_key, sleep_time in tqdm(steps):
-        await receive_and_save_image()
-        top_left, bottom_right, center = template_matching(image_path, template_key, templates)
-        tap_center(center)
-        tqdm_sleep(sleep_time)
+    for i in tqdm(range(100), desc="{:>15}".format("Loop")):
+        for template_key, sleep_time in tqdm(steps, desc="{:>15}".format("Total")):
+            await receive_and_save_image()
+            top_left, bottom_right, center = template_matching(image_path, template_key, templates)
+            tap_center(center)
+            tqdm_sleep(sleep_time, template_key)
 
 if __name__ == "__main__":
     asyncio.run(main())
