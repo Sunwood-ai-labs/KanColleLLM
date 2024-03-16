@@ -9,7 +9,7 @@ f6a19bcb        device
 
 conda create -n KanColleLLM python=3.11
 
-pip install fastapi uvicorn pillow websockets google-generativeai python-dotenv
+pip install fastapi uvicorn pillow websockets google-generativeai python-dotenv opencv-python
 
 uvicorn ApollonStreamAPI.api.screencap_server:app --host 0.0.0.0 --port 8000
 
