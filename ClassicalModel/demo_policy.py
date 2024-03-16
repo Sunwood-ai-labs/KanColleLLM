@@ -3,6 +3,9 @@ import os
 import websockets
 import asyncio
 import subprocess
+from tqdm import tqdm
+import numpy as np
+import time
 
 def load_templates(template_dir):
     templates = {}
@@ -13,57 +16,69 @@ def load_templates(template_dir):
             templates[os.path.splitext(filename)[0]] = template
     return templates
 
-def template_matching(image_path, template_key, templates):
+def template_matching(image_path, template_key, templates, threshold=0.8):
     image = cv2.imread(image_path, 0)
     template = templates[template_key]
     result = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED)
-    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-    top_left = max_loc
-    bottom_right = (top_left[0] + template.shape[1], top_left[1] + template.shape[0])
     
-    # 矩形の中心点を計算
-    center_x = (top_left[0] + bottom_right[0]) // 2
-    center_y = (top_left[1] + bottom_right[1]) // 2
-    center = (center_x, center_y)
+    locations = np.where(result >= threshold)
     
-    return top_left, bottom_right, center
+    if len(locations[0]) > 0:
+        top_left = (locations[1][0], locations[0][0])
+        bottom_right = (top_left[0] + template.shape[1], top_left[1] + template.shape[0])
+        
+        center_x = (top_left[0] + bottom_right[0]) // 2
+        center_y = (top_left[1] + bottom_right[1]) // 2
+        center = (center_x, center_y)
+        
+        return top_left, bottom_right, center
+    else:
+        return None, None, None
 
 async def receive_and_save_image():
-    uri = "ws://localhost:8000/stream"  # WebSocket接続のURI
+    uri = "ws://localhost:8000/stream"
     async with websockets.connect(uri) as websocket:
-        # サーバーからのバイナリデータ（JPEG画像）を受信
         data = await websocket.recv()
 
-        # 受信したデータをファイルに保存
         with open("./tmp/tmp.jpg", "wb") as image_file:
             image_file.write(data)
-            print("画像を受信し、保存しました。")
-
+            # print("画像を受信し、保存しました。")
 
 def tap_center(center):
+    if center is None:
+        return -1
     adb_command = f"adb shell input tap {center[0]} {center[1]}"
     subprocess.run(adb_command, shell=True)
 
-# イベントループを実行して、画像受信関数を呼び出す
-asyncio.run(receive_and_save_image())
+def tqdm_sleep(seconds):
+    for _ in tqdm(range(seconds)):
+        time.sleep(1)
 
-# テンプレートの読み込み
-template_dir = r"C:\Prj\KanColleLLM\ClassicalModel\template"
-templates = load_templates(template_dir)
+async def main():
+    template_dir = r"C:\Prj\KanColleLLM\ClassicalModel\template"
+    templates = load_templates(template_dir)
+    image_path = "./tmp/tmp.jpg"
 
-# 画像とテンプレートキーの指定
-image_path = "./tmp/tmp.jpg"
-template_key = "sortie"
+    steps = [
+        ("supply", 5),
+        ("all_supply", 5),
+        ("toHome", 5),
+        ("home_sortie", 5),
+        ("sortie-selection_sortie", 5),
+        ("1-1-Kinkai", 5),
+        ("battle-stage-ok", 5),
+        ("battle-start", 20),
+        ("tanju", 5),
+        ("next", 5),
+        ("next", 5),
+        ("withdrawal", 5)
+    ]
 
-# テンプレートマッチングの実行
-top_left, bottom_right, center = template_matching(image_path=image_path, template_key="home_sortie", templates=templates)
+    for template_key, sleep_time in tqdm(steps):
+        await receive_and_save_image()
+        top_left, bottom_right, center = template_matching(image_path, template_key, templates)
+        tap_center(center)
+        tqdm_sleep(sleep_time)
 
-# 結果の表示
-print(f"Matching coordinates: Top-left: {top_left}, Bottom-right: {bottom_right}")
-print(f"Center point: {center}")
-# 中心座標をタップ
-# tap_center(center)
-
-top_left, bottom_right, center = template_matching(image_path=image_path, template_key="sortie-selection_sortie", templates=templates)
-# 中心座標をタップ
-tap_center(center)
+if __name__ == "__main__":
+    asyncio.run(main())
