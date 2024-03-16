@@ -64,18 +64,29 @@ async def main():
         ("all_supply", 5),
         ("toHome", 5),
         ("home_sortie", 5),
+
         ("sortie-selection_sortie", 5),
-        ("1-1-Kinkai", 5),
+        # ("1-1-Kinkai", 5),
+        ("1-3-Kaijo", 5),
         ("battle-stage-ok", 5),
-        ("battle-start", 20),
-        ("tanju", 30),
+        ("battle-start", 5),
+        ("rashin", 5),
+        ("rashin", 5),
+        ("rashin", 5),
+        ("rashin", 10),
+        ("tanju", 50),
+        ("not_battle", 5),
         ("next", 3),
         ("next", 3),
         ("next", 3),
         ("next", 3),
         ("back", 10),
         ("next", 10),
-        ("withdrawal", 5)
+        
+        ("withdrawal", 5),
+        # ("next_stage", 5),
+        # ("rashin", 5),
+        # ("tanju", 30),
     ]
 
     for i in tqdm(range(100), desc="{:>15}".format("Loop")):
